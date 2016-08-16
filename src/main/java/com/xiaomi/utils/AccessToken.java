@@ -32,10 +32,9 @@ public class AccessToken {
         if(StringUtils.equals(tokenType, MAC_TYPE)) {
             macKey = json.getString("mac_key");
             macAlgorithm = json.getString("mac_algorithm");
-        } else {
-            expiresIn = json.getLong("expires_in");
-            refreshToken = json.getString("refresh_token");
         }
+        expiresIn = json.getLong("expires_in");
+        refreshToken = json.getString("refresh_token");
     }
     
     public String getAccessTokenId() {
