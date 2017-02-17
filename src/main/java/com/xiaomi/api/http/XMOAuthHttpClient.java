@@ -3,11 +3,11 @@
  * Copyright (c) 2013 xiaomi.com, Inc. All Rights Reserved
  *
  **************************************************************************/
+
 package com.xiaomi.api.http;
 
 import com.xiaomi.utils.AccessToken;
 import com.xiaomi.utils.XMUtil;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -21,26 +21,31 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class XMOAuthHttpClient {
-    
-    static Logger log = Logger.getLogger(XMOAuthHttpClient.class.getName());
-    
+
+    private static final Logger log = Logger.getLogger(XMOAuthHttpClient.class.getName());
+
     public static final String OAUTH2_HOST = "https://account.xiaomi.com";
+
     public static final String AUTHORIZE_PATH = "/oauth2/authorize";
+
     public static final String TOKEN_PATH = "/oauth2/token";
 
     protected long clientId;
+
     protected String clientSecret;
+
     protected String redirectUri;
-    protected XMHttpClient xmHttpClient = null;
-    public XMOAuthHttpClient(long clientId, String clientSecret, String redirectUri,XMHttpClient xmHttpClient) {
+
+    protected XMHttpClient xmHttpClient;
+
+    public XMOAuthHttpClient(long clientId, String clientSecret, String redirectUri, XMHttpClient xmHttpClient) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.redirectUri = redirectUri;
-        this.xmHttpClient= xmHttpClient;
+        this.xmHttpClient = xmHttpClient;
     }
-    
+
     /**
-     * 
      * @param responseType code/token
      * @param state 可选参数，可以防止csrf攻击
      * @param scope 可选参数，是申请到scope的一个子集,用空格分割
@@ -60,9 +65,10 @@ public class XMOAuthHttpClient {
         String query = URLEncodedUtils.format(params, XMHttpClient.DEFAULT_CHARSET);
         return getAuthorizeEndpoint() + "?" + query;
     }
-    
+
     /**
      * 用Authorization Code换取access token
+     *
      * @param code 服务器下发的Authorization Code
      * @return 获取到的AccessToken Object 或者 null
      * @throws XMException
@@ -81,8 +87,7 @@ public class XMOAuthHttpClient {
         try {
             JSONObject json = new JSONObject(result);
             if (json.has("access_token")) {
-                AccessToken token = new AccessToken(json);
-                return token;
+                return new AccessToken(json);
             } else {
                 throw new XMException(json);
             }
@@ -91,8 +96,10 @@ public class XMOAuthHttpClient {
         }
         return null;
     }
+
     /**
      * 用Refresh Token换取access token
+     *
      * @param refreshToken 服务器下发的refresh_token
      * @return 获取到的AccessToken Object 或者 null
      * @throws XMException
@@ -111,8 +118,7 @@ public class XMOAuthHttpClient {
         try {
             JSONObject json = new JSONObject(result);
             if (json.has("access_token")) {
-                AccessToken token = new AccessToken(json);
-                return token;
+                return new AccessToken(json);
             } else {
                 throw new XMException(json);
             }
@@ -121,7 +127,7 @@ public class XMOAuthHttpClient {
         }
         return null;
     }
-    
+
     public long getClientId() {
         return clientId;
     }
@@ -153,12 +159,11 @@ public class XMOAuthHttpClient {
     public static String getTokenEndpoint() {
         return OAUTH2_HOST + TOKEN_PATH;
     }
-    
 
     public String getAuthorizeUrl() {
         return getAuthorizeUrl("code", null, null);
     }
-    
+
     public String getAuthorizeUrl(String state) {
         return getAuthorizeUrl("code", state, null);
     }

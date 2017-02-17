@@ -18,14 +18,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class XMApiHttpClient {
-    
+
     static Logger log = Logger.getLogger(XMApiHttpClient.class.getName());
-    
+
     public static final String API_HOST = "https://open.account.xiaomi.com";
+
     protected String accessTokenId;
+
     protected long clientId;
-    protected XMHttpClient xmHttpClient = null;
-    
+
+    protected XMHttpClient xmHttpClient;
+
     public XMApiHttpClient(long clientId, String accessTokenId, XMHttpClient xmHttpClient) {
         super();
         this.clientId = clientId;
@@ -33,10 +36,8 @@ public class XMApiHttpClient {
         this.xmHttpClient = xmHttpClient;
     }
 
-    
     /**
-     * 
-     * @param path   api url的path部分，例如：/user/profile
+     * @param path api url的path部分，例如：/user/profile
      * @param params NameValuePair list
      * @param method GET/POST
      * @return
@@ -44,15 +45,14 @@ public class XMApiHttpClient {
      * @throws URISyntaxException
      * @throws JSONException
      */
-    public JSONObject apiCall(String path, 
-                              List<NameValuePair> params, 
+    public JSONObject apiCall(String path,
+                              List<NameValuePair> params,
                               String method) throws XMException, URISyntaxException, JSONException {
         return apiCall(path, params, null, method);
     }
-    
+
     /**
-     * 
-     * @param path   api url的path部分，例如：/user/profile
+     * @param path api url的path部分，例如：/user/profile
      * @param params NameValuePair list
      * @param headers Header list
      * @param method GET/POST
@@ -61,9 +61,9 @@ public class XMApiHttpClient {
      * @throws URISyntaxException
      * @throws JSONException
      */
-    public JSONObject apiCall(String path, 
-                              List<NameValuePair> params, 
-                              List<Header> headers, 
+    public JSONObject apiCall(String path,
+                              List<NameValuePair> params,
+                              List<Header> headers,
                               String method) throws XMException, URISyntaxException, JSONException {
         JSONObject jsonResult = null;
 

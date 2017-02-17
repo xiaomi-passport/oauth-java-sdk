@@ -3,6 +3,7 @@
  * Copyright (c) 2013 xiaomi.com, Inc. All Rights Reserved
  *
  **************************************************************************/
+
 package com.xiaomi.api.http;
 
 import org.json.JSONException;
@@ -22,18 +23,18 @@ public class XMException extends Exception {
     public XMException(Exception cause) {
         super(cause);
     }
-    
-    public XMException(int httpCode , int statusCode) {
+
+    public XMException(int httpCode, int statusCode) {
         super("http code: " + httpCode + "\nstatusCode: " + statusCode);
         this.statusCode = statusCode;
     }
-    
+
     public XMException(JSONObject json) throws JSONException {
         super("error:" + json.getString("error_description") + " error_code:" + json.getInt("error"));
         this.error = json.getInt("error");
         this.errorDescription = json.getString("error_description");
     }
-    
+
     public XMException(int httpCode, JSONObject json, int statusCode) throws JSONException {
         super("http code: " + httpCode + "\n error:" + json.getString("error_description") + " error_code:" + json.getInt("error"));
         this.statusCode = statusCode;
@@ -66,5 +67,5 @@ public class XMException extends Exception {
     public String getErrorDescription() {
         return errorDescription;
     }
-    
+
 }

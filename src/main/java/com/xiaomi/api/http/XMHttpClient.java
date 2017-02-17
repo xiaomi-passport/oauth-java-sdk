@@ -7,8 +7,6 @@
 package com.xiaomi.api.http;
 
 import com.xiaomi.utils.XMUtil;
-
-import org.apache.commons.httpclient.ConnectTimeoutException;
 import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
@@ -27,7 +25,6 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.log4j.Logger;
-import org.jsslutils.extra.gsi.GsiWrappingTrustManager;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -38,8 +35,6 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.security.PublicKey;
@@ -53,11 +48,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
 public class XMHttpClient {
@@ -68,21 +61,22 @@ public class XMHttpClient {
 
     public static final String METHOD_POST = "POST";
 
-    public static final int CONNECTTIMEOUT = 30 * 1000;
+    public static final int CONNECT_TIMEOUT = 30 * 1000;
 
-    public static final int SOTIMEOUT = 30 * 1000;
+    public static final int SOCKET_TIMEOUT = 30 * 1000;
 
     public static final int MAX_CON_PER_HOST = 100;
 
     public static final String DEFAULT_CHARSET = "UTF-8";
 
     public static final String HEADER_FLAG = "&&&START&&&";
-    HttpClient client = null;
+
+    private HttpClient client = null;
 
     private MultiThreadedHttpConnectionManager connectionManager;
 
     public XMHttpClient() {
-        this(MAX_CON_PER_HOST, CONNECTTIMEOUT, SOTIMEOUT);
+        this(MAX_CON_PER_HOST, CONNECT_TIMEOUT, SOCKET_TIMEOUT);
     }
 
     public XMHttpClient(int maxConPerHost, int conTimeOutMs, int soTimeOutMs) {
@@ -174,7 +168,7 @@ public class XMHttpClient {
             try {
                 sslcontext = SSLContext.getInstance("SSL");
                 sslcontext.init(null, new TrustManager[] {
-                    new EasyX509TrustManager()
+                        new EasyX509TrustManager()
                 }, new java.security.SecureRandom());
             } catch (NoSuchAlgorithmException e) {
                 log.error(e.getMessage());
@@ -200,9 +194,7 @@ public class XMHttpClient {
         }
 
         public Socket createSocket(String host, int port, InetAddress localAddress, int localPort, HttpConnectionParams params)
-                                                                                                                               throws IOException,
-                                                                                                                               UnknownHostException,
-                                                                                                                               ConnectTimeoutException {
+                throws IOException {
             if (params == null) {
                 throw new IllegalArgumentException("Parameters may not be null");
             }
@@ -212,10 +204,10 @@ public class XMHttpClient {
                 return socketfactory.createSocket(host, port, localAddress, localPort);
             } else {
                 Socket socket = socketfactory.createSocket();
-                SocketAddress localaddr = new InetSocketAddress(localAddress, localPort);
-                SocketAddress remoteaddr = new InetSocketAddress(host, port);
-                socket.bind(localaddr);
-                socket.connect(remoteaddr, timeout);
+                SocketAddress localAddr = new InetSocketAddress(localAddress, localPort);
+                SocketAddress remoteAddr = new InetSocketAddress(host, port);
+                socket.bind(localAddr);
+                socket.connect(remoteAddr, timeout);
                 return socket;
             }
         }
