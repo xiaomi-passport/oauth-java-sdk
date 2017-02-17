@@ -3,8 +3,8 @@
  * Copyright (c) 2013 xiaomi.com, Inc. All Rights Reserved
  *
  **************************************************************************/
-package com.xiaomi.utils;
 
+package com.xiaomi.utils;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.Header;
@@ -24,15 +24,17 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
-
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 public class XMUtil {
-    public static boolean DEBUG = true;
+
     public static Logger log = Logger.getLogger(XMUtil.class.getName());
 
+    public static boolean DEBUG = true;
+
     private static final String HMAC_SHA1 = "HmacSHA1";
+
     private static Random random = new SecureRandom();
 
     public static void Log(Logger log, String content) {
@@ -44,26 +46,26 @@ public class XMUtil {
     /**
      * 签名字符串的格式 nonce + \n + method(POST\GET) + \n + host + \n + uriPaht + \n + req(query
      * param按照key的字典序)+\n(最后也需要添加一个\n)
-     * 
+     *
      * @param nonce 随机字符串
      * @param method POST GET\
      * @param uriPath requet的path部分
-     * @param req query param按照key的字典序
+     * @param qs query param按照key的字典序
      * @param macAlgorithm 签名算法 必须是 HmacSHA1
      * @return 需要签名的字符串
      * @throws UnsupportedEncodingException
-     * @throws 3NoSuchAlgorithmException
+     * @throws NoSuchAlgorithmException
      * @throws InvalidKeyException
      */
-    public static String getMacAccessTokenSignatureString(String nonce, 
-                                                          String method, 
-                                                          String host, 
-                                                          String uriPath, 
+    public static String getMacAccessTokenSignatureString(String nonce,
+                                                          String method,
+                                                          String host,
+                                                          String uriPath,
                                                           String qs,
-                                                          String macKey, 
-                                                          String macAlgorithm) throws InvalidKeyException, 
-                                                                                    NoSuchAlgorithmException, 
-                                                                                    UnsupportedEncodingException {
+                                                          String macKey,
+                                                          String macAlgorithm) throws InvalidKeyException,
+                                                                                      NoSuchAlgorithmException,
+                                                                                      UnsupportedEncodingException {
         List<String> exps = new ArrayList<String>();
         Log(log, String.format("mac sign macKey %s macAlgorithm %s", macKey, macAlgorithm));
         exps.add(nonce);
@@ -87,7 +89,7 @@ public class XMUtil {
                     return p1.getName().compareTo(p2.getName());
                 }
             });
-            sb.append(URLEncodedUtils.format(paramList,  "UTF-8"));
+            sb.append(URLEncodedUtils.format(paramList, "UTF-8"));
         }
         exps.add(sb.toString());
         String joined = StringUtils.join(exps.toArray(), "\n");
@@ -100,8 +102,7 @@ public class XMUtil {
         } else {
             throw new NoSuchAlgorithmException("error mac algorithm : " + macAlgorithm);
         }
-        String signature = encodeSign(signatureBytes);
-        return signature;
+        return encodeSign(signatureBytes);
     }
 
     /**
@@ -111,19 +112,18 @@ public class XMUtil {
      * @return
      * @throws UnsupportedEncodingException
      */
-    public static Header buildMacRequestHead(String accessTokenId, 
-                                             String nonce, 
+    public static Header buildMacRequestHead(String accessTokenId,
+                                             String nonce,
                                              String mac) throws UnsupportedEncodingException {
         String headContent = "MAC access_token=\"%s\", nonce=\"%s\",mac=\"%s\"";
         headContent = String.format(headContent, URLEncoder.encode(accessTokenId, "utf-8"),
-                                    URLEncoder.encode(nonce, "utf-8"), URLEncoder.encode(mac, "utf-8"));
-        Header header = new Header("Authorization", headContent);
-        return header;
+                URLEncoder.encode(nonce, "utf-8"), URLEncoder.encode(mac, "utf-8"));
+        return new Header("Authorization", headContent);
     }
 
     /**
      * 获取随机nonce值 64是随机数，后面32位是总的分钟数
-     * 
+     *
      * @return
      */
     public static String generateNonce() {
@@ -142,7 +142,7 @@ public class XMUtil {
 
     /**
      * HMAC-SHA1
-     * 
+     *
      * @param data
      * @param key
      * @return
