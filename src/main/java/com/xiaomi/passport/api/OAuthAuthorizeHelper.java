@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.xiaomi.passport.api;
 
 import com.xiaomi.passport.common.HttpRequestClient;
 import com.xiaomi.passport.constant.GlobalConstants;
 import com.xiaomi.passport.exception.OAuthSdkException;
 import com.xiaomi.passport.pojo.AccessToken;
+import com.xiaomi.passport.util.AuthorizeUrlUtils;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,29 +64,6 @@ public class OAuthAuthorizeHelper implements GlobalConstants {
     }
 
     /**
-     * @param responseType code/token
-     * @param state 可选参数，可以防止csrf攻击
-     * @param scope 可选参数，是申请到scope的一个子集,用空格分割
-     * @return 获取Authorize code Url
-     */
-    public String getAuthorizeUrl(String responseType, String state, String scope) {
-
-        List<NameValuePair> params = new LinkedList<NameValuePair>();
-        params.add(new BasicNameValuePair(CLIENT_ID, String.valueOf(clientId)));
-        params.add(new BasicNameValuePair("response_type", responseType));
-        if (StringUtils.isNotEmpty(scope)) {
-            params.add(new BasicNameValuePair("scope", scope));
-        }
-        if (StringUtils.isNotEmpty(state)) {
-            params.add(new BasicNameValuePair("state", state));
-        }
-
-        params.add(new BasicNameValuePair("redirect_uri", redirectUri));
-        String query = URLEncodedUtils.format(params, GlobalConstants.DEFAULT_CHARSET);
-        return getAuthorizeEndpoint() + "?" + query;
-    }
-
-    /**
      * 用Authorization Code换取access token
      *
      * @param code 服务器下发的Authorization Code
@@ -96,13 +73,13 @@ public class OAuthAuthorizeHelper implements GlobalConstants {
      */
     public AccessToken getAccessTokenByAuthorizationCode(String code) throws OAuthSdkException, URISyntaxException {
         List<NameValuePair> params = new LinkedList<NameValuePair>();
-        params.add(new BasicNameValuePair("client_id", String.valueOf(clientId)));
-        params.add(new BasicNameValuePair("grant_type", "authorization_code"));
-        params.add(new BasicNameValuePair("client_secret", clientSecret));
-        params.add(new BasicNameValuePair("token_type", "mac"));
-        params.add(new BasicNameValuePair("redirect_uri", redirectUri));
-        params.add(new BasicNameValuePair("code", code));
-        String result = httpClient.get(getTokenEndpoint(), params);
+        params.add(new BasicNameValuePair(CLIENT_ID, String.valueOf(clientId)));
+        params.add(new BasicNameValuePair(GRANT_TYPE, "authorization_code"));
+        params.add(new BasicNameValuePair(CLIENT_SECRET, clientSecret));
+        params.add(new BasicNameValuePair(TOKEN_TYPE, "mac"));
+        params.add(new BasicNameValuePair(REDIRECT_URI, redirectUri));
+        params.add(new BasicNameValuePair(CODE, code));
+        String result = httpClient.get(AuthorizeUrlUtils.getTokenEndpoint(), params);
         log.debug("Get authorization code access token result[{}]", result);
         JSONObject json = JSONObject.fromObject(result);
         if (json.has("access_token")) {
@@ -123,13 +100,13 @@ public class OAuthAuthorizeHelper implements GlobalConstants {
      */
     public AccessToken getAccessTokenByRefreshToken(String refreshToken) throws OAuthSdkException, URISyntaxException {
         List<NameValuePair> params = new LinkedList<NameValuePair>();
-        params.add(new BasicNameValuePair("client_id", String.valueOf(clientId)));
-        params.add(new BasicNameValuePair("grant_type", "refresh_token"));
-        params.add(new BasicNameValuePair("client_secret", clientSecret));
-        params.add(new BasicNameValuePair("token_type", "mac"));
-        params.add(new BasicNameValuePair("redirect_uri", redirectUri));
-        params.add(new BasicNameValuePair("refresh_token", refreshToken));
-        String result = httpClient.get(getTokenEndpoint(), params);
+        params.add(new BasicNameValuePair(CLIENT_ID, String.valueOf(clientId)));
+        params.add(new BasicNameValuePair(GRANT_TYPE, "refresh_token"));
+        params.add(new BasicNameValuePair(CLIENT_SECRET, clientSecret));
+        params.add(new BasicNameValuePair(TOKEN_TYPE, "mac"));
+        params.add(new BasicNameValuePair(REDIRECT_URI, redirectUri));
+        params.add(new BasicNameValuePair(REFRESH_TOKEN, refreshToken));
+        String result = httpClient.get(AuthorizeUrlUtils.getTokenEndpoint(), params);
         log.debug("Refresh access token result[{}]", result);
         JSONObject json = JSONObject.fromObject(result);
         if (json.has("access_token")) {
@@ -138,22 +115,6 @@ public class OAuthAuthorizeHelper implements GlobalConstants {
         } else {
             throw new OAuthSdkException("No 'access_token' element in response!");
         }
-    }
-
-    public String getAuthorizeUrl() {
-        return getAuthorizeUrl("code", null, null);
-    }
-
-    public String getAuthorizeUrl(String state) {
-        return getAuthorizeUrl("code", state, null);
-    }
-
-    public static String getAuthorizeEndpoint() {
-        return OAUTH2_HOST + AUTHORIZE_PATH;
-    }
-
-    public static String getTokenEndpoint() {
-        return OAUTH2_HOST + TOKEN_PATH;
     }
 
     // getter and setter

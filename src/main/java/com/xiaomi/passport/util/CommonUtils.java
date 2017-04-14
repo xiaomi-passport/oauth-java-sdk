@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xiaomi.passport.utils;
+package com.xiaomi.passport.util;
 
 import com.sun.org.apache.xml.internal.security.utils.Base64;
 import com.xiaomi.passport.constant.GlobalConstants;

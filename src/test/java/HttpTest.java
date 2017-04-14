@@ -2,7 +2,7 @@ import com.xiaomi.passport.api.OAuthAuthorizeHelper;
 import com.xiaomi.passport.api.OpenApiHelper;
 import com.xiaomi.passport.common.HttpMethod;
 import com.xiaomi.passport.common.HttpRequestClient;
-import com.xiaomi.passport.utils.CommonUtils;
+import com.xiaomi.passport.util.CommonUtils;
 import net.sf.json.JSONObject;
 import org.apache.http.Header;
 import org.apache.http.NameValuePair;
@@ -27,7 +27,7 @@ public class HttpTest {
     public void testXMOAuthHttpClient() throws Exception {
         String redirectUri = "http://xiaomi.com";
         OAuthAuthorizeHelper client = new OAuthAuthorizeHelper(CLIENT_ID, CLIENT_SECRET, redirectUri, httpRequestClient);
-        String url = client.getAuthorizeUrl();
+        String url = client.getCodeAuthorizeUrl();
         System.out.println(url);
     }
 

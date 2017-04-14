@@ -39,6 +39,8 @@ public interface GlobalConstants {
 
     String SCOPE = "scope";
 
+    String STATE = "state";
+
     String ACCESS_TOKEN = "access_token";
 
     String MAC_KEY = "mac_key";
@@ -48,6 +50,16 @@ public interface GlobalConstants {
     String EXPIRES_IN = "expires_in";
 
     String REFRESH_TOKEN = "refresh_token";
+
+    String RESPONSE_TYPE = "response_type";
+
+    String REDIRECT_URI = "redirect_uri";
+
+    String GRANT_TYPE = "grant_type";
+
+    String CLIENT_SECRET = "client_secret";
+
+    String CODE = "code";
 
     /** others */
 
