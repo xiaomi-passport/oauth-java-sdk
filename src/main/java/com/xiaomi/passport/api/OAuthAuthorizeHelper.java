@@ -4,31 +4,33 @@
  *
  **************************************************************************/
 
-package com.xiaomi.api.http;
+package com.xiaomi.passport.api;
 
-import com.xiaomi.utils.AccessToken;
-import com.xiaomi.utils.XMUtil;
-import org.apache.commons.lang.StringUtils;
+import com.xiaomi.passport.common.HttpRequestClient;
+import com.xiaomi.passport.constant.GlobalConstants;
+import com.xiaomi.passport.exception.XMException;
+import com.xiaomi.passport.pojo.AccessToken;
+import net.sf.json.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.log4j.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
 
-public class XMOAuthHttpClient {
+/**
+ * oauth authorize api
+ *
+ * @author zhenchao.wang 2017-04-14 13:48:14
+ * @version 1.0.0
+ */
+public class OAuthAuthorizeHelper implements GlobalConstants {
 
-    private static final Logger log = Logger.getLogger(XMOAuthHttpClient.class.getName());
-
-    public static final String OAUTH2_HOST = "https://account.xiaomi.com";
-
-    public static final String AUTHORIZE_PATH = "/oauth2/authorize";
-
-    public static final String TOKEN_PATH = "/oauth2/token";
+    private static final Logger log = LoggerFactory.getLogger(OAuthAuthorizeHelper.class);
 
     protected long clientId;
 
@@ -36,13 +38,20 @@ public class XMOAuthHttpClient {
 
     protected String redirectUri;
 
-    protected XMHttpClient xmHttpClient;
+    protected HttpRequestClient httpClient;
 
-    public XMOAuthHttpClient(long clientId, String clientSecret, String redirectUri, XMHttpClient xmHttpClient) {
+    public OAuthAuthorizeHelper(long clientId, String clientSecret, String redirectUri) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.redirectUri = redirectUri;
-        this.xmHttpClient = xmHttpClient;
+        this.httpClient = new HttpRequestClient();
+    }
+
+    public OAuthAuthorizeHelper(long clientId, String clientSecret, String redirectUri, HttpRequestClient httpClient) {
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
+        this.redirectUri = redirectUri;
+        this.httpClient = httpClient;
     }
 
     /**
@@ -52,8 +61,9 @@ public class XMOAuthHttpClient {
      * @return 获取Authorize code Url
      */
     public String getAuthorizeUrl(String responseType, String state, String scope) {
+
         List<NameValuePair> params = new LinkedList<NameValuePair>();
-        params.add(new BasicNameValuePair("client_id", String.valueOf(clientId)));
+        params.add(new BasicNameValuePair(CLIENT_ID, String.valueOf(clientId)));
         params.add(new BasicNameValuePair("response_type", responseType));
         if (StringUtils.isNotEmpty(scope)) {
             params.add(new BasicNameValuePair("scope", scope));
@@ -61,8 +71,9 @@ public class XMOAuthHttpClient {
         if (StringUtils.isNotEmpty(state)) {
             params.add(new BasicNameValuePair("state", state));
         }
+
         params.add(new BasicNameValuePair("redirect_uri", redirectUri));
-        String query = URLEncodedUtils.format(params, XMHttpClient.DEFAULT_CHARSET);
+        String query = URLEncodedUtils.format(params, GlobalConstants.DEFAULT_CHARSET);
         return getAuthorizeEndpoint() + "?" + query;
     }
 
@@ -82,19 +93,15 @@ public class XMOAuthHttpClient {
         params.add(new BasicNameValuePair("token_type", "mac"));
         params.add(new BasicNameValuePair("redirect_uri", redirectUri));
         params.add(new BasicNameValuePair("code", code));
-        String result = xmHttpClient.get(getTokenEndpoint(), params);
-        XMUtil.Log(log, "Get access token response: " + result);
-        try {
-            JSONObject json = new JSONObject(result);
-            if (json.has("access_token")) {
-                return new AccessToken(json);
-            } else {
-                throw new XMException(json);
-            }
-        } catch (JSONException e) {
-            XMUtil.Log(log, e.getMessage());
+        String result = httpClient.get(getTokenEndpoint(), params);
+        log.debug("Get authorization code access token result[{}]", result);
+        JSONObject json = JSONObject.fromObject(result);
+        if (json.has("access_token")) {
+            // FIXME 这里应该细化一下 2017-04-14 17:06:14
+            return new AccessToken(json);
+        } else {
+            throw new XMException("No 'access_token' element in response!");
         }
-        return null;
     }
 
     /**
@@ -113,43 +120,23 @@ public class XMOAuthHttpClient {
         params.add(new BasicNameValuePair("token_type", "mac"));
         params.add(new BasicNameValuePair("redirect_uri", redirectUri));
         params.add(new BasicNameValuePair("refresh_token", refreshToken));
-        String result = xmHttpClient.get(getTokenEndpoint(), params);
-        XMUtil.Log(log, "Get access token response: " + result);
-        try {
-            JSONObject json = new JSONObject(result);
-            if (json.has("access_token")) {
-                return new AccessToken(json);
-            } else {
-                throw new XMException(json);
-            }
-        } catch (JSONException e) {
-            XMUtil.Log(log, e.getMessage());
+        String result = httpClient.get(getTokenEndpoint(), params);
+        log.debug("Refresh access token result[{}]", result);
+        JSONObject json = JSONObject.fromObject(result);
+        if (json.has("access_token")) {
+            // FIXME 这里应该细化一下 2017-04-14 17:06:14
+            return new AccessToken(json);
+        } else {
+            throw new XMException("No 'access_token' element in response!");
         }
-        return null;
     }
 
-    public long getClientId() {
-        return clientId;
+    public String getAuthorizeUrl() {
+        return getAuthorizeUrl("code", null, null);
     }
 
-    public void setClientId(long clientId) {
-        this.clientId = clientId;
-    }
-
-    public String getClientSecret() {
-        return clientSecret;
-    }
-
-    public void setClientSecret(String clientSecret) {
-        this.clientSecret = clientSecret;
-    }
-
-    public String getRedirectUri() {
-        return redirectUri;
-    }
-
-    public void setRedirectUri(String redirectUri) {
-        this.redirectUri = redirectUri;
+    public String getAuthorizeUrl(String state) {
+        return getAuthorizeUrl("code", state, null);
     }
 
     public static String getAuthorizeEndpoint() {
@@ -160,11 +147,32 @@ public class XMOAuthHttpClient {
         return OAUTH2_HOST + TOKEN_PATH;
     }
 
-    public String getAuthorizeUrl() {
-        return getAuthorizeUrl("code", null, null);
+    // getter and setter
+
+    public long getClientId() {
+        return clientId;
     }
 
-    public String getAuthorizeUrl(String state) {
-        return getAuthorizeUrl("code", state, null);
+    public OAuthAuthorizeHelper setClientId(long clientId) {
+        this.clientId = clientId;
+        return this;
+    }
+
+    public String getClientSecret() {
+        return clientSecret;
+    }
+
+    public OAuthAuthorizeHelper setClientSecret(String clientSecret) {
+        this.clientSecret = clientSecret;
+        return this;
+    }
+
+    public String getRedirectUri() {
+        return redirectUri;
+    }
+
+    public OAuthAuthorizeHelper setRedirectUri(String redirectUri) {
+        this.redirectUri = redirectUri;
+        return this;
     }
 }

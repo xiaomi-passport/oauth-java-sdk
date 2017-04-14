@@ -1,12 +1,13 @@
-import com.xiaomi.api.http.XMApiHttpClient;
-import com.xiaomi.api.http.XMHttpClient;
-import com.xiaomi.api.http.XMOAuthHttpClient;
-import com.xiaomi.utils.XMUtil;
-import org.apache.commons.httpclient.Header;
+import com.xiaomi.passport.api.OAuthAuthorizeHelper;
+import com.xiaomi.passport.api.OpenApiHelper;
+import com.xiaomi.passport.common.HttpMethod;
+import com.xiaomi.passport.common.HttpRequestClient;
+import com.xiaomi.passport.utils.CommonUtils;
+import net.sf.json.JSONObject;
+import org.apache.http.Header;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONObject;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -20,12 +21,12 @@ public class HttpTest {
     // your client secret
     private static final String CLIENT_SECRET = "your client secret";
 
-    private XMHttpClient xmHttpClient = new XMHttpClient();
+    private HttpRequestClient httpRequestClient = new HttpRequestClient();
 
     @Test
     public void testXMOAuthHttpClient() throws Exception {
         String redirectUri = "http://xiaomi.com";
-        XMOAuthHttpClient client = new XMOAuthHttpClient(CLIENT_ID, CLIENT_SECRET, redirectUri, xmHttpClient);
+        OAuthAuthorizeHelper client = new OAuthAuthorizeHelper(CLIENT_ID, CLIENT_SECRET, redirectUri, httpRequestClient);
         String url = client.getAuthorizeUrl();
         System.out.println(url);
     }
@@ -44,14 +45,14 @@ public class HttpTest {
 
         String macKey = "mac key";
 
-        String nonce = XMUtil.generateNonce();
+        String nonce = CommonUtils.generateNonce();
         String qs = URLEncodedUtils.format(params, "UTF-8");
-        String mac = XMUtil.getMacAccessTokenSignatureString(
+        String mac = CommonUtils.getMacAccessTokenSignature(
                 nonce, "GET", "open.account.xiaomi.com", "/user/profile", qs, macKey, "HmacSHA1");
-        Header macHeader = XMUtil.buildMacRequestHead(tokenId, nonce, mac);
+        Header macHeader = CommonUtils.buildMacRequestHeader(tokenId, nonce, mac);
         headers.add(macHeader);
-        XMApiHttpClient client = new XMApiHttpClient(CLIENT_ID, tokenId, xmHttpClient);
-        JSONObject json = client.apiCall("/user/profile", params, headers, "GET");
+        OpenApiHelper client = new OpenApiHelper(CLIENT_ID, tokenId, httpRequestClient);
+        JSONObject json = client.request("/user/profile", HttpMethod.GET, params, headers);
         System.out.println(json.toString());
     }
 }

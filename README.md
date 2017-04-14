@@ -49,7 +49,7 @@ public static void main(String[] args) throws XMException, URISyntaxException {
 AccessToken包括如下信息:
 
 ```java
-protected String accessTokenId;
+protected String token;
 protected String refreshToken;
 protected String scope;
 protected long expiresIn;
@@ -77,7 +77,7 @@ public static void main(String[] args) throws XMException, URISyntaxException {
 ```java
 public static void main(String[] args) throws Exception {
     long cId = 179887661252608l;
-    String tokenId = "accessToken.accessTokenId";
+    String tokenId = "accessToken.token";
     List<Header> headers = new ArrayList<Header>();
 
     List<NameValuePair> params = new ArrayList<NameValuePair>();
