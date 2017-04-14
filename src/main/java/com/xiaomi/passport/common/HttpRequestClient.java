@@ -1,13 +1,22 @@
-/***************************************************************************
+/*
+ * Copyright (c) 2013-2017 xiaomi.com, Inc. All Rights Reserved
  *
- * Copyright (c) 2013 xiaomi.com, Inc. All Rights Reserved
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- **************************************************************************/
-
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.xiaomi.passport.common;
 
 import com.xiaomi.passport.constant.GlobalConstants;
-import com.xiaomi.passport.exception.XMException;
+import com.xiaomi.passport.exception.OAuthSdkException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -46,10 +55,6 @@ import java.util.List;
 public class HttpRequestClient {
 
     private final Logger log = LoggerFactory.getLogger(HttpRequestClient.class);
-
-    public static final String METHOD_GET = "GET";
-
-    public static final String METHOD_POST = "POST";
 
     public static final int CONNECT_TIMEOUT = 30 * 1000;
 
@@ -90,10 +95,10 @@ public class HttpRequestClient {
      *
      * @param url
      * @return
-     * @throws XMException
+     * @throws OAuthSdkException
      * @throws URISyntaxException
      */
-    public String get(String url) throws XMException, URISyntaxException {
+    public String get(String url) throws OAuthSdkException, URISyntaxException {
         return this.get(url, new ArrayList<NameValuePair>(), null);
     }
 
@@ -103,10 +108,10 @@ public class HttpRequestClient {
      * @param url
      * @param params
      * @return
-     * @throws XMException
+     * @throws OAuthSdkException
      * @throws URISyntaxException
      */
-    public String get(String url, List<NameValuePair> params) throws XMException, URISyntaxException {
+    public String get(String url, List<NameValuePair> params) throws OAuthSdkException, URISyntaxException {
         return this.get(url, params, null);
     }
 
@@ -117,10 +122,10 @@ public class HttpRequestClient {
      * @param params
      * @param headers
      * @return
-     * @throws XMException
+     * @throws OAuthSdkException
      * @throws URISyntaxException
      */
-    public String get(String url, List<NameValuePair> params, Header[] headers) throws XMException, URISyntaxException {
+    public String get(String url, List<NameValuePair> params, Header[] headers) throws OAuthSdkException, URISyntaxException {
         log.info("Get request url[{}]", url);
         URIBuilder builder = new URIBuilder(url);
         if (CollectionUtils.isNotEmpty(params)) {
@@ -134,10 +139,10 @@ public class HttpRequestClient {
      *
      * @param url
      * @return
-     * @throws XMException
+     * @throws OAuthSdkException
      * @throws URISyntaxException
      */
-    public String post(String url) throws XMException, URISyntaxException {
+    public String post(String url) throws OAuthSdkException, URISyntaxException {
         return this.post(url, new ArrayList<NameValuePair>(), null);
     }
 
@@ -147,10 +152,10 @@ public class HttpRequestClient {
      * @param url
      * @param params
      * @return
-     * @throws XMException
+     * @throws OAuthSdkException
      * @throws URISyntaxException
      */
-    public String post(String url, List<NameValuePair> params) throws XMException, URISyntaxException {
+    public String post(String url, List<NameValuePair> params) throws OAuthSdkException, URISyntaxException {
         return this.post(url, params, null);
     }
 
@@ -161,10 +166,10 @@ public class HttpRequestClient {
      * @param params
      * @param headers
      * @return
-     * @throws XMException
+     * @throws OAuthSdkException
      * @throws URISyntaxException
      */
-    public String post(String url, List<NameValuePair> params, Header[] headers) throws XMException, URISyntaxException {
+    public String post(String url, List<NameValuePair> params, Header[] headers) throws OAuthSdkException, URISyntaxException {
         log.info("Post request url[{}]", url);
         URIBuilder builder = new URIBuilder(url);
         if (CollectionUtils.isNotEmpty(params)) {
@@ -179,9 +184,9 @@ public class HttpRequestClient {
      * @param request
      * @param headers
      * @return
-     * @throws XMException
+     * @throws OAuthSdkException
      */
-    protected String request(HttpUriRequest request, Header[] headers) throws XMException {
+    protected String request(HttpUriRequest request, Header[] headers) throws OAuthSdkException {
         try {
             if (ArrayUtils.isNotEmpty(headers)) {
                 request.setHeaders(headers);
@@ -191,12 +196,12 @@ public class HttpRequestClient {
             String responseString = response.toString();
             if (!this.isExpectedHttpStatus(statusLine.getStatusCode())) {
                 log.error("The http status [{}] is not expected, !", statusLine.getStatusCode());
-                throw new XMException(responseString, statusLine.getStatusCode());
+                throw new OAuthSdkException(responseString, statusLine.getStatusCode());
             }
             return responseString.replace(GlobalConstants.JSON_SAFE_FLAG, StringUtils.EMPTY);
         } catch (IOException e) {
             log.error("Execute http request error, uri[{}]!", request.getURI(), e);
-            throw new XMException(e.getMessage(), e);
+            throw new OAuthSdkException(e.getMessage(), e);
         }
     }
 

@@ -1,14 +1,23 @@
-/***************************************************************************
+/*
+ * Copyright (c) 2013-2017 xiaomi.com, Inc. All Rights Reserved
  *
- * Copyright (c) 2013 xiaomi.com, Inc. All Rights Reserved
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- **************************************************************************/
-
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.xiaomi.passport.api;
 
 import com.xiaomi.passport.common.HttpRequestClient;
 import com.xiaomi.passport.constant.GlobalConstants;
-import com.xiaomi.passport.exception.XMException;
+import com.xiaomi.passport.exception.OAuthSdkException;
 import com.xiaomi.passport.pojo.AccessToken;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
@@ -82,10 +91,10 @@ public class OAuthAuthorizeHelper implements GlobalConstants {
      *
      * @param code 服务器下发的Authorization Code
      * @return 获取到的AccessToken Object 或者 null
-     * @throws XMException
+     * @throws OAuthSdkException
      * @throws URISyntaxException
      */
-    public AccessToken getAccessTokenByAuthorizationCode(String code) throws XMException, URISyntaxException {
+    public AccessToken getAccessTokenByAuthorizationCode(String code) throws OAuthSdkException, URISyntaxException {
         List<NameValuePair> params = new LinkedList<NameValuePair>();
         params.add(new BasicNameValuePair("client_id", String.valueOf(clientId)));
         params.add(new BasicNameValuePair("grant_type", "authorization_code"));
@@ -100,7 +109,7 @@ public class OAuthAuthorizeHelper implements GlobalConstants {
             // FIXME 这里应该细化一下 2017-04-14 17:06:14
             return new AccessToken(json);
         } else {
-            throw new XMException("No 'access_token' element in response!");
+            throw new OAuthSdkException("No 'access_token' element in response!");
         }
     }
 
@@ -109,10 +118,10 @@ public class OAuthAuthorizeHelper implements GlobalConstants {
      *
      * @param refreshToken 服务器下发的refresh_token
      * @return 获取到的AccessToken Object 或者 null
-     * @throws XMException
+     * @throws OAuthSdkException
      * @throws URISyntaxException
      */
-    public AccessToken getAccessTokenByRefreshToken(String refreshToken) throws XMException, URISyntaxException {
+    public AccessToken getAccessTokenByRefreshToken(String refreshToken) throws OAuthSdkException, URISyntaxException {
         List<NameValuePair> params = new LinkedList<NameValuePair>();
         params.add(new BasicNameValuePair("client_id", String.valueOf(clientId)));
         params.add(new BasicNameValuePair("grant_type", "refresh_token"));
@@ -127,7 +136,7 @@ public class OAuthAuthorizeHelper implements GlobalConstants {
             // FIXME 这里应该细化一下 2017-04-14 17:06:14
             return new AccessToken(json);
         } else {
-            throw new XMException("No 'access_token' element in response!");
+            throw new OAuthSdkException("No 'access_token' element in response!");
         }
     }
 

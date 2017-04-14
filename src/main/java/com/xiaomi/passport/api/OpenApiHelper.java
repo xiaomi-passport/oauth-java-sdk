@@ -1,14 +1,23 @@
-/***************************************************************************
+/*
+ * Copyright (c) 2013-2017 xiaomi.com, Inc. All Rights Reserved
  *
- * Copyright (c) 2013 xiaomi.com, Inc. All Rights Reserved
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- **************************************************************************/
-
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.xiaomi.passport.api;
 
 import com.xiaomi.passport.common.HttpMethod;
 import com.xiaomi.passport.common.HttpRequestClient;
-import com.xiaomi.passport.exception.XMException;
+import com.xiaomi.passport.exception.OAuthSdkException;
 import net.sf.json.JSONObject;
 import org.apache.http.Header;
 import org.apache.http.NameValuePair;
@@ -57,11 +66,11 @@ public class OpenApiHelper {
      * @param method GET/POST
      * @param params query params
      * @return
-     * @throws XMException
+     * @throws OAuthSdkException
      * @throws URISyntaxException
      */
     public JSONObject request(String path, HttpMethod method, List<NameValuePair> params)
-            throws XMException, URISyntaxException {
+            throws OAuthSdkException, URISyntaxException {
         return this.request(path, method, params, null);
     }
 
@@ -73,11 +82,11 @@ public class OpenApiHelper {
      * @param params query params
      * @param headers query http headers
      * @return
-     * @throws XMException
+     * @throws OAuthSdkException
      * @throws URISyntaxException
      */
     public JSONObject request(String path, HttpMethod method, List<NameValuePair> params, List<Header> headers)
-            throws XMException, URISyntaxException {
+            throws OAuthSdkException, URISyntaxException {
 
         // param format
         params = (null == params) ? new ArrayList<NameValuePair>() : params;
@@ -90,7 +99,7 @@ public class OpenApiHelper {
         } else if (HttpMethod.POST.equals(method)) {
             return JSONObject.fromObject(httpClient.post(OPEN_API_HOST + path, params, headerArray));
         } else {
-            throw new XMException("Unknown http method!");
+            throw new OAuthSdkException("Unknown http method!");
         }
 
     }
