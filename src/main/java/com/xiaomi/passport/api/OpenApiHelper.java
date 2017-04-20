@@ -109,7 +109,7 @@ public class OpenApiHelper implements GlobalConstants {
             int errorCode = json.optInt("code", -1);
             String errorDesc = json.optString("description", StringUtils.EMPTY);
             log.error("Get user open id error, error info[code={}, desc={}]", errorCode, errorDesc);
-            throw new OAuthSdkException("get user profile error", errorCode, errorDesc);
+            throw new OAuthSdkException("get user open id error", errorCode, errorDesc);
         }
         return json.optJSONObject("data").optString("openid", StringUtils.EMPTY);
     }
@@ -121,7 +121,19 @@ public class OpenApiHelper implements GlobalConstants {
      * @throws OAuthSdkException
      */
     public Pair<String, String> getPhoneAndEmail() throws OAuthSdkException {
-        return null;
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair(OPEN_CLIENT_ID, String.valueOf(clientId)));
+        params.add(new BasicNameValuePair(ACCESS_TOKEN, accessToken));
+        JSONObject json = this.request(HttpMethod.GET, PHONE_AND_EMAIL_PATH, params);
+        if (!this.isSuccessResult(json)) {
+            // error response
+            int errorCode = json.optInt("code", -1);
+            String errorDesc = json.optString("description", StringUtils.EMPTY);
+            log.error("Get user phone number and email address error, error info[code={}, desc={}]", errorCode, errorDesc);
+            throw new OAuthSdkException("get user phone and email error", errorCode, errorDesc);
+        }
+        JSONObject data = json.optJSONObject("data");
+        return Pair.of(data.optString("phone", StringUtils.EMPTY), data.optString("email", StringUtils.EMPTY));
     }
 
     /**
@@ -131,11 +143,31 @@ public class OpenApiHelper implements GlobalConstants {
      * @throws OAuthSdkException
      */
     public List<Long> getFriendIdList() throws OAuthSdkException {
-        return null;
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair(OPEN_CLIENT_ID, String.valueOf(clientId)));
+        params.add(new BasicNameValuePair(ACCESS_TOKEN, accessToken));
+        JSONObject json = this.request(HttpMethod.GET, USER_REALTION_PATH, params);
+        if (!this.isSuccessResult(json)) {
+            // error response
+            int errorCode = json.optInt("code", -1);
+            String errorDesc = json.optString("description", StringUtils.EMPTY);
+            log.error("Get user miliao friend list error, error info[code={}, desc={}]", errorCode, errorDesc);
+            throw new OAuthSdkException("get user miliao friend list error", errorCode, errorDesc);
+        }
+        List<Long> ids = new ArrayList<Long>();
+        String friends = json.optJSONObject("data").optString("friends", StringUtils.EMPTY);
+        if (StringUtils.isBlank(friends)) {
+            return ids;
+        }
+        String[] elements = friends.split(",");
+        for (final String element : elements) {
+            ids.add(Long.valueOf(element));
+        }
+        return ids;
     }
 
     public void checkPassword() throws OAuthSdkException {
-
+        // TODO 2017-04-20 20:36:02
     }
 
     /**
