@@ -13,32 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.xiaomi.passport.api;
 
 import com.xiaomi.passport.common.HttpMethod;
 import com.xiaomi.passport.common.OAuthHttpClient;
+import com.xiaomi.passport.constant.GlobalConstants;
 import com.xiaomi.passport.exception.OAuthSdkException;
+import com.xiaomi.passport.pojo.UserProfile;
+import com.xiaomi.passport.util.HttpResponseUtils;
 import net.sf.json.JSONObject;
+import net.sf.json.util.JSONUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.Header;
+import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * xiaomi passport open api request helper
+ * docs: <url>https://dev.mi.com/docs/passport/open-api/</url>
  *
  * @author zhenchao.wang 2017-04-14 16:29:27
  * @version 1.0.0
  */
-public class OpenApiHelper {
+public class OpenApiHelper implements GlobalConstants {
 
-    private static final Logger log = LoggerFactory.getLogger(OpenApiHelper.class);
+    protected static final Logger log = LoggerFactory.getLogger(OpenApiHelper.class);
 
-    private static final String OPEN_API_HOST = "https://open.account.xiaomi.com";
+    protected static final String OPEN_CLIENT_ID = "clientId";
+
+    protected static final String ACCESS_TOKEN = "token";
 
     protected String accessToken;
 
@@ -47,6 +59,7 @@ public class OpenApiHelper {
     protected OAuthHttpClient httpClient;
 
     public OpenApiHelper(String accessToken, long clientId) {
+        super();
         this.accessToken = accessToken;
         this.clientId = clientId;
         this.httpClient = new OAuthHttpClient();
@@ -60,74 +73,135 @@ public class OpenApiHelper {
     }
 
     /**
-     * send request to specify url with params
+     * get user profile by access token and client id
      *
-     * @param path the path part of api url, /user/profile etc.
-     * @param method GET/POST
-     * @param params query params
      * @return
      * @throws OAuthSdkException
-     * @throws URISyntaxException
      */
-    public JSONObject request(String path, HttpMethod method, List<NameValuePair> params)
-            throws OAuthSdkException, URISyntaxException {
-        return this.request(path, method, params, null);
+    public UserProfile getUserProfile() throws OAuthSdkException {
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair(OPEN_CLIENT_ID, String.valueOf(clientId)));
+        params.add(new BasicNameValuePair(ACCESS_TOKEN, accessToken));
+        JSONObject json = this.request(HttpMethod.GET, USER_PROFILE_PATH, params);
+        if (!this.isSuccessResult(json)) {
+            // error response
+            int errorCode = json.optInt("code", -1);
+            String errorDesc = json.optString("description", StringUtils.EMPTY);
+            log.error("Get user profile error, error info[code={}, desc={}]", errorCode, errorDesc);
+            throw new OAuthSdkException("get user profile error", errorCode, errorDesc);
+        }
+        return new UserProfile(json.optJSONObject("data"));
     }
 
     /**
-     * send request to specify url with params
+     * get open id by access token and client id
      *
-     * @param path the path part of api url, /user/profile etc.
-     * @param method GET/POST
-     * @param params query params
-     * @param headers query http headers
      * @return
      * @throws OAuthSdkException
-     * @throws URISyntaxException
      */
-    public JSONObject request(String path, HttpMethod method, List<NameValuePair> params, List<Header> headers)
-            throws OAuthSdkException, URISyntaxException {
+    public String getOpenId() throws OAuthSdkException {
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair(OPEN_CLIENT_ID, String.valueOf(clientId)));
+        params.add(new BasicNameValuePair(ACCESS_TOKEN, accessToken));
+        JSONObject json = this.request(HttpMethod.GET, OPEN_ID_PATH, params);
+        if (!this.isSuccessResult(json)) {
+            // error response
+            int errorCode = json.optInt("code", -1);
+            String errorDesc = json.optString("description", StringUtils.EMPTY);
+            log.error("Get user open id error, error info[code={}, desc={}]", errorCode, errorDesc);
+            throw new OAuthSdkException("get user profile error", errorCode, errorDesc);
+        }
+        return json.optJSONObject("data").optString("openid", StringUtils.EMPTY);
+    }
 
-        // param format
-        params = (null == params) ? new ArrayList<NameValuePair>() : params;
-        headers = (null == headers) ? new ArrayList<Header>() : headers;
+    /**
+     * get phone number and email address by access token and client id
+     *
+     * @return
+     * @throws OAuthSdkException
+     */
+    public Pair<String, String> getPhoneAndEmail() throws OAuthSdkException {
+        return null;
+    }
 
-        Header[] headerArray = new Header[headers.size()];
-        headerArray = headers.toArray(headerArray);
-        if (HttpMethod.GET.equals(method)) {
-            return JSONObject.fromObject(httpClient.get(OPEN_API_HOST + path, params, headerArray));
-        } else if (HttpMethod.POST.equals(method)) {
-            return JSONObject.fromObject(httpClient.post(OPEN_API_HOST + path, params, headerArray));
-        } else {
-            throw new OAuthSdkException("Unknown http method!");
+    /**
+     * get user miliao friend id list by access token and client id
+     *
+     * @return
+     * @throws OAuthSdkException
+     */
+    public List<Long> getFriendIdList() throws OAuthSdkException {
+        return null;
+    }
+
+    public void checkPassword() throws OAuthSdkException {
+
+    }
+
+    /**
+     * send request to specify url with params and expected json response
+     *
+     * @param path the path part of api url, /user/profile etc.
+     * @param method GET or POST
+     * @param params query params
+     * @return json response data
+     * @throws OAuthSdkException
+     */
+    protected JSONObject request(HttpMethod method, String path, List<NameValuePair> params) throws OAuthSdkException {
+        return this.request(method, path, params, null);
+    }
+
+    /**
+     * send request to specify url with params and expected json response
+     *
+     * @param path the path part of api url, /user/profile etc.
+     * @param method GET or POST
+     * @param params query params
+     * @param headers query http headers
+     * @return json response data
+     * @throws OAuthSdkException
+     */
+    protected JSONObject request(
+            HttpMethod method, String path, List<NameValuePair> params, List<Header> headers) throws OAuthSdkException {
+
+        // params format
+        List<NameValuePair> paramList = (null == params) ? new ArrayList<NameValuePair>() : params;
+        List<Header> headerList = (null == headers) ? new ArrayList<Header>() : headers;
+
+        Header[] headerArray = new Header[0];
+        if (CollectionUtils.isEmpty(headers)) {
+            headerArray = new Header[headerList.size()];
+            headerArray = headerList.toArray(headerArray);
         }
 
+        HttpResponse response;
+        if (HttpMethod.GET.equals(method)) {
+            response = httpClient.get(GlobalConstants.OPEN_API_HOST + path, params, headerArray);
+        } else if (HttpMethod.POST.equals(method)) {
+            response = httpClient.post(GlobalConstants.OPEN_API_HOST + path, params, headerArray);
+        } else {
+            log.error("The http method [{}] is unsupported!", method);
+            throw new OAuthSdkException("unsupported http method");
+        }
+
+        String entityContent = HttpResponseUtils.getEntityContent(response);
+        if (StringUtils.isBlank(entityContent) || !JSONUtils.mayBeJSON(entityContent)) {
+            log.error("The response data is not json format, data[{}]", entityContent);
+            throw new OAuthSdkException("response data is not json");
+        }
+
+        return JSONObject.fromObject(entityContent);
     }
 
-    public String getAccessToken() {
-        return accessToken;
+    /**
+     * validate if success response
+     *
+     * @param json
+     * @return
+     */
+    private boolean isSuccessResult(JSONObject json) {
+        // never be null
+        return (null != json && "ok".equalsIgnoreCase(json.optString("result", StringUtils.EMPTY)));
     }
 
-    public OpenApiHelper setAccessToken(String accessToken) {
-        this.accessToken = accessToken;
-        return this;
-    }
-
-    public long getClientId() {
-        return clientId;
-    }
-
-    public OpenApiHelper setClientId(long clientId) {
-        this.clientId = clientId;
-        return this;
-    }
-
-    public OAuthHttpClient getHttpClient() {
-        return httpClient;
-    }
-
-    public OpenApiHelper setHttpClient(OAuthHttpClient httpClient) {
-        this.httpClient = httpClient;
-        return this;
-    }
 }

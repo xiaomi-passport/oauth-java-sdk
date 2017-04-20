@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.xiaomi.passport.constant;
 
 /**
@@ -23,13 +24,27 @@ package com.xiaomi.passport.constant;
  */
 public interface GlobalConstants {
 
-    /** request path */
+    /** oauth authorize request path */
 
     String OAUTH2_HOST = "https://account.xiaomi.com";
 
     String AUTHORIZE_PATH = "/oauth2/authorize";
 
     String TOKEN_PATH = "/oauth2/token";
+
+    /** open api request path */
+
+    String OPEN_API_HOST = "https://open.account.xiaomi.com";
+
+    String USER_PROFILE_PATH = "/user/profile";
+
+    String OPEN_ID_PATH = "/user/openidV2";
+
+    String PHONE_AND_EMAIL_PATH = "/user/phoneAndEmail";
+
+    String USER_REALTION_PATH = "/user/relation";
+
+    String CHECK_PASSWORD_PATH = "/checkPassword";
 
     /** parameter name */
 
