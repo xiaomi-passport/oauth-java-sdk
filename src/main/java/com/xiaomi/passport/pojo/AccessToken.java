@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.xiaomi.passport.pojo;
 
 import com.xiaomi.passport.constant.GlobalConstants;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * access token
@@ -26,7 +29,32 @@ import net.sf.json.JSONObject;
  */
 public class AccessToken {
 
-    public static final String MAC_TYPE = "mac";
+    public enum TokenType {
+
+        MAC("mac"),
+
+        BEARER("bearer");
+
+        private String type;
+
+        TokenType(String type) {
+            this.type = type;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        /**
+         * tell whether {@param tokenType} is valid
+         *
+         * @param tokenType
+         * @return
+         */
+        public static boolean isValid(TokenType tokenType) {
+            return MAC.equals(tokenType) || BEARER.equals(tokenType);
+        }
+    }
 
     /** access token */
     private String token;
@@ -47,12 +75,17 @@ public class AccessToken {
         this.tokenType = json.getString(GlobalConstants.TOKEN_TYPE);
         this.scope = json.getString(GlobalConstants.SCOPE);
         this.token = json.getString(GlobalConstants.ACCESS_TOKEN);
-        if (MAC_TYPE.equals(tokenType)) {
+        if (TokenType.MAC.getType().equals(tokenType)) {
             this.macKey = json.getString(GlobalConstants.MAC_KEY);
             this.macAlgorithm = json.getString(GlobalConstants.MAC_ALGORITHM);
         }
         this.expiresIn = json.getLong(GlobalConstants.EXPIRES_IN);
         this.refreshToken = json.getString(GlobalConstants.REFRESH_TOKEN);
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
     }
 
     public String getToken() {

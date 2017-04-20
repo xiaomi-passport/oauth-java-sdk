@@ -13,17 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.xiaomi.passport.common;
 
-import com.xiaomi.passport.constant.GlobalConstants;
 import com.xiaomi.passport.exception.OAuthSdkException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -47,28 +45,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * http common request client
+ * oauth http request client
  *
  * @author zhenchao.wang 2017-04-14 16:24:51
  * @version 1.0.0
  */
-public class HttpRequestClient {
+public class OAuthHttpClient {
 
-    private final Logger log = LoggerFactory.getLogger(HttpRequestClient.class);
+    private final Logger log = LoggerFactory.getLogger(OAuthHttpClient.class);
 
-    public static final int CONNECT_TIMEOUT = 30 * 1000;
+    private static final int CONNECT_TIMEOUT = 30 * 1000;
 
-    public static final int SOCKET_TIMEOUT = 30 * 1000;
+    private static final int SOCKET_TIMEOUT = 30 * 1000;
 
-    public static final int MAX_CON_PER_HOST = 100;
+    private static final int MAX_CON_PER_HOST = 100;
 
     private HttpClient httpClient = null;
 
-    public HttpRequestClient() {
+    public OAuthHttpClient() {
         this(MAX_CON_PER_HOST, CONNECT_TIMEOUT, SOCKET_TIMEOUT);
     }
 
-    public HttpRequestClient(int maxConnection, int connectTimeout, int socketTimeout) {
+    public OAuthHttpClient(int maxConnection, int connectTimeout, int socketTimeout) {
         PoolingHttpClientConnectionManager connectionManager =
                 new PoolingHttpClientConnectionManager(RegistryBuilder.<ConnectionSocketFactory>create()
                         .register("http", PlainConnectionSocketFactory.getSocketFactory())
@@ -91,141 +89,106 @@ public class HttpRequestClient {
     }
 
     /**
-     * get request
+     * get request without params
      *
      * @param url
      * @return
      * @throws OAuthSdkException
-     * @throws URISyntaxException
      */
-    public String get(String url) throws OAuthSdkException, URISyntaxException {
+    public HttpResponse get(String url) throws OAuthSdkException {
         return this.get(url, new ArrayList<NameValuePair>(), null);
     }
 
     /**
-     * get request
+     * get request with params
      *
      * @param url
      * @param params
      * @return
      * @throws OAuthSdkException
-     * @throws URISyntaxException
      */
-    public String get(String url, List<NameValuePair> params) throws OAuthSdkException, URISyntaxException {
+    public HttpResponse get(String url, List<NameValuePair> params) throws OAuthSdkException {
         return this.get(url, params, null);
     }
 
     /**
-     * get request
+     * get request with params and headers
      *
      * @param url
      * @param params
      * @param headers
      * @return
      * @throws OAuthSdkException
-     * @throws URISyntaxException
      */
-    public String get(String url, List<NameValuePair> params, Header[] headers) throws OAuthSdkException, URISyntaxException {
-        log.info("Get request url[{}]", url);
-        URIBuilder builder = new URIBuilder(url);
-        if (CollectionUtils.isNotEmpty(params)) {
-            builder.setParameters(params);
+    public HttpResponse get(String url, List<NameValuePair> params, Header[] headers) throws OAuthSdkException {
+        try {
+            URIBuilder builder = new URIBuilder(url);
+            if (CollectionUtils.isNotEmpty(params)) {
+                builder.setParameters(params);
+            }
+            HttpUriRequest request = new HttpGet(builder.build());
+            if (ArrayUtils.isNotEmpty(headers)) {
+                request.setHeaders(headers);
+            }
+            return httpClient.execute(request);
+        } catch (URISyntaxException e) {
+            log.error("The uri[{}] is illegal!", url, e);
+            throw new OAuthSdkException("url syntax exception", e);
+        } catch (IOException e) {
+            log.error("Execute get request url[{}] error!", url, e);
+            throw new OAuthSdkException("execute get request error", e);
         }
-        return this.request(new HttpGet(builder.build()), headers);
     }
 
     /**
-     * post request
+     * post request without params
      *
      * @param url
      * @return
      * @throws OAuthSdkException
-     * @throws URISyntaxException
      */
-    public String post(String url) throws OAuthSdkException, URISyntaxException {
+    public HttpResponse post(String url) throws OAuthSdkException {
         return this.post(url, new ArrayList<NameValuePair>(), null);
     }
 
     /**
-     * post request
+     * post request with params
      *
      * @param url
      * @param params
      * @return
      * @throws OAuthSdkException
-     * @throws URISyntaxException
      */
-    public String post(String url, List<NameValuePair> params) throws OAuthSdkException, URISyntaxException {
+    public HttpResponse post(String url, List<NameValuePair> params) throws OAuthSdkException {
         return this.post(url, params, null);
     }
 
     /**
-     * post request
+     * post request with params and headers
      *
      * @param url
      * @param params
      * @param headers
      * @return
      * @throws OAuthSdkException
-     * @throws URISyntaxException
      */
-    public String post(String url, List<NameValuePair> params, Header[] headers) throws OAuthSdkException, URISyntaxException {
-        log.info("Post request url[{}]", url);
-        URIBuilder builder = new URIBuilder(url);
-        if (CollectionUtils.isNotEmpty(params)) {
-            builder.setParameters(params);
-        }
-        return request(new HttpPost(builder.build()), headers);
-    }
-
-    /**
-     * execute the specify request
-     *
-     * @param request
-     * @param headers
-     * @return
-     * @throws OAuthSdkException
-     */
-    protected String request(HttpUriRequest request, Header[] headers) throws OAuthSdkException {
+    public HttpResponse post(String url, List<NameValuePair> params, Header[] headers) throws OAuthSdkException {
         try {
+            URIBuilder builder = new URIBuilder(url);
+            if (CollectionUtils.isNotEmpty(params)) {
+                builder.setParameters(params);
+            }
+            HttpUriRequest request = new HttpPost(builder.build());
             if (ArrayUtils.isNotEmpty(headers)) {
                 request.setHeaders(headers);
             }
-            HttpResponse response = httpClient.execute(request);
-            StatusLine statusLine = response.getStatusLine();
-            String responseString = response.toString();
-            if (!this.isExpectedHttpStatus(statusLine.getStatusCode())) {
-                log.error("The http status [{}] is not expected, !", statusLine.getStatusCode());
-                throw new OAuthSdkException(responseString, statusLine.getStatusCode());
-            }
-            return responseString.replace(GlobalConstants.JSON_SAFE_FLAG, StringUtils.EMPTY);
+            return httpClient.execute(request);
+        } catch (URISyntaxException e) {
+            log.error("The uri[{}] is illegal!", url, e);
+            throw new OAuthSdkException("url syntax exception", e);
         } catch (IOException e) {
-            log.error("Execute http request error, uri[{}]!", request.getURI(), e);
-            throw new OAuthSdkException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * validate if is expected http status
-     *
-     * 301 => "HTTP/1.1 301 Moved Permanently",
-     * 302 => "HTTP/1.1 302 Found",
-     * 303 => "HTTP/1.1 303 See Other",
-     * 307 => "HTTP/1.1 307 Temporary Redirect",
-     *
-     * @param status
-     * @return
-     */
-    private boolean isExpectedHttpStatus(int status) {
-        switch (status) {
-            case 200:
-            case 301:
-            case 302:
-            case 303:
-            case 307:
-                return true;
-            default:
-                return false;
+            log.error("Execute post request url[{}] error!", url, e);
+            throw new OAuthSdkException("execute post request error", e);
         }
     }
 

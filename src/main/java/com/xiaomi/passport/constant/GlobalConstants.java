@@ -61,6 +61,8 @@ public interface GlobalConstants {
 
     String CODE = "code";
 
+    String SKIP_CONFIRM = "skip_confirm";
+
     /** others */
 
     String HMAC_SHA1 = "HmacSHA1";

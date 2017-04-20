@@ -28,7 +28,7 @@ public static void main(String[] args) {
 }
 ```
 
-复制授权url到浏览器, 输入用户名密码, 浏览器跳转到`http://xiaomi.com?code=code-value`
+复制授权url到浏览器, 输入用户名密码, 浏览器跳转到`http://xiaomi.com?code=code-type`
 复制code-value作为步骤2的输入。
 
 #### 2.  获取accessToken DEMO
@@ -38,7 +38,7 @@ public static void main(String[] args) throws XMException, URISyntaxException {
     long cid = 179887661252608l;
     String cs = "xxxxx";
     String uri = "http://xiaomi.com";
-    String codeValue = "code-value";
+    String codeValue = "code-type";
 
     XMHttpClient hc = new com.xiaomi.api.http.XMHttpClient();
     XMOAuthHttpClient xmoAuthHttpClient = new XMOAuthHttpClient(cid, cs, uri, hc);
@@ -65,7 +65,7 @@ public static void main(String[] args) throws XMException, URISyntaxException {
     long cId = 179887661252608l;
     String cs = "xxxxx";
     String uri = "http://xiaomi.com";
-    String refreshToken = "code-value";
+    String refreshToken = "code-type";
 
     XMHttpClient hc = new com.xiaomi.api.http.XMHttpClient();
     XMOAuthHttpClient xmoAuthHttpClient = new XMOAuthHttpClient(cId, cs, uri, hc);

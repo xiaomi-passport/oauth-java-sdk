@@ -16,7 +16,7 @@
 package com.xiaomi.passport.api;
 
 import com.xiaomi.passport.common.HttpMethod;
-import com.xiaomi.passport.common.HttpRequestClient;
+import com.xiaomi.passport.common.OAuthHttpClient;
 import com.xiaomi.passport.exception.OAuthSdkException;
 import net.sf.json.JSONObject;
 import org.apache.http.Header;
@@ -44,15 +44,15 @@ public class OpenApiHelper {
 
     protected long clientId;
 
-    protected HttpRequestClient httpClient;
+    protected OAuthHttpClient httpClient;
 
     public OpenApiHelper(String accessToken, long clientId) {
         this.accessToken = accessToken;
         this.clientId = clientId;
-        this.httpClient = new HttpRequestClient();
+        this.httpClient = new OAuthHttpClient();
     }
 
-    public OpenApiHelper(long clientId, String accessToken, HttpRequestClient httpClient) {
+    public OpenApiHelper(long clientId, String accessToken, OAuthHttpClient httpClient) {
         super();
         this.clientId = clientId;
         this.accessToken = accessToken;
@@ -122,11 +122,11 @@ public class OpenApiHelper {
         return this;
     }
 
-    public HttpRequestClient getHttpClient() {
+    public OAuthHttpClient getHttpClient() {
         return httpClient;
     }
 
-    public OpenApiHelper setHttpClient(HttpRequestClient httpClient) {
+    public OpenApiHelper setHttpClient(OAuthHttpClient httpClient) {
         this.httpClient = httpClient;
         return this;
     }

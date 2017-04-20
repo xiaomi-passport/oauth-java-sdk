@@ -1,7 +1,6 @@
-import com.xiaomi.passport.api.OAuthAuthorizeHelper;
 import com.xiaomi.passport.api.OpenApiHelper;
 import com.xiaomi.passport.common.HttpMethod;
-import com.xiaomi.passport.common.HttpRequestClient;
+import com.xiaomi.passport.common.OAuthHttpClient;
 import com.xiaomi.passport.util.CommonUtils;
 import net.sf.json.JSONObject;
 import org.apache.http.Header;
@@ -21,14 +20,14 @@ public class HttpTest {
     // your client secret
     private static final String CLIENT_SECRET = "your client secret";
 
-    private HttpRequestClient httpRequestClient = new HttpRequestClient();
+    private OAuthHttpClient OAuthHttpClient = new OAuthHttpClient();
 
     @Test
     public void testXMOAuthHttpClient() throws Exception {
         String redirectUri = "http://xiaomi.com";
-        OAuthAuthorizeHelper client = new OAuthAuthorizeHelper(CLIENT_ID, CLIENT_SECRET, redirectUri, httpRequestClient);
-        String url = client.getCodeAuthorizeUrl();
-        System.out.println(url);
+        // AuthorizationCodeGrantHelper client = new AuthorizationCodeGrantHelper(CLIENT_ID, CLIENT_SECRET, redirectUri, OAuthHttpClient);
+        /*String url = client.getCodeAuthorizeUrl();
+        System.out.println(url);*/
     }
 
     @Test
@@ -51,7 +50,7 @@ public class HttpTest {
                 nonce, "GET", "open.account.xiaomi.com", "/user/profile", qs, macKey, "HmacSHA1");
         Header macHeader = CommonUtils.buildMacRequestHeader(tokenId, nonce, mac);
         headers.add(macHeader);
-        OpenApiHelper client = new OpenApiHelper(CLIENT_ID, tokenId, httpRequestClient);
+        OpenApiHelper client = new OpenApiHelper(CLIENT_ID, tokenId, OAuthHttpClient);
         JSONObject json = client.request("/user/profile", HttpMethod.GET, params, headers);
         System.out.println(json.toString());
     }

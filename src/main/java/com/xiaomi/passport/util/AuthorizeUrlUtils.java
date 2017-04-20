@@ -83,7 +83,7 @@ public class AuthorizeUrlUtils implements GlobalConstants {
         }
         params.add(new BasicNameValuePair(REDIRECT_URI, redirectUri));
         String query = URLEncodedUtils.format(params, GlobalConstants.DEFAULT_CHARSET);
-        return String.format("%s?%s", getAuthorizeEndpoint(), query);
+        return String.format("%s?%s", getAuthorizeUrl(), query);
     }
 
     /**
@@ -91,7 +91,7 @@ public class AuthorizeUrlUtils implements GlobalConstants {
      *
      * @return
      */
-    public static String getAuthorizeEndpoint() {
+    public static String getAuthorizeUrl() {
         return OAUTH2_HOST + AUTHORIZE_PATH;
     }
 
@@ -100,7 +100,7 @@ public class AuthorizeUrlUtils implements GlobalConstants {
      *
      * @return
      */
-    public static String getTokenEndpoint() {
+    public static String getTokenUrl() {
         return OAUTH2_HOST + TOKEN_PATH;
     }
 }
