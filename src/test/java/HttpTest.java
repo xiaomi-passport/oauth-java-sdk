@@ -1,8 +1,6 @@
 import com.xiaomi.passport.api.OpenApiHelper;
-import com.xiaomi.passport.common.HttpMethod;
 import com.xiaomi.passport.common.OAuthHttpClient;
 import com.xiaomi.passport.util.CommonUtils;
-import net.sf.json.JSONObject;
 import org.apache.http.Header;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -51,7 +49,7 @@ public class HttpTest {
         Header macHeader = CommonUtils.buildMacRequestHeader(tokenId, nonce, mac);
         headers.add(macHeader);
         OpenApiHelper client = new OpenApiHelper(CLIENT_ID, tokenId, OAuthHttpClient);
-        JSONObject json = client.request("/user/profile", HttpMethod.GET, params, headers);
-        System.out.println(json.toString());
+        // JSONObject json = client.request(HttpMethod.GET, "/user/profile", params, headers);
+        // System.out.println(json.toString());
     }
 }

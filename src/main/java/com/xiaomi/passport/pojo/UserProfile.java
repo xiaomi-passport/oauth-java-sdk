@@ -50,13 +50,12 @@ public class UserProfile {
     }
 
     public UserProfile(JSONObject json) {
-        UserProfile userProfile = new UserProfile();
-        userProfile.setUserId(json.optLong("userId", -1L))
-                .setNickname(json.optString("miliaoNick", StringUtils.EMPTY))
-                .setAvatarUrl(json.optString("miliaoIcon", StringUtils.EMPTY))
-                .setOpenId(json.optString("openid", StringUtils.EMPTY))
-                .setPhoneNumber(json.optString("phone", StringUtils.EMPTY))
-                .setEmail(json.optString("email", StringUtils.EMPTY));
+        this.userId = json.optLong("userId", -1L);
+        this.nickname = json.optString("miliaoNick", StringUtils.EMPTY);
+        this.avatarUrl = json.optString("miliaoIcon", StringUtils.EMPTY);
+        this.openId = json.optString("openid", StringUtils.EMPTY);
+        this.phoneNumber = json.optString("phone", StringUtils.EMPTY);
+        this.email = json.optString("email", StringUtils.EMPTY);
         String friends = json.optString("friends", StringUtils.EMPTY);
         if (StringUtils.isNotBlank(friends)) {
             List<Long> ids = new ArrayList<Long>();
@@ -64,7 +63,7 @@ public class UserProfile {
             for (final String element : elements) {
                 ids.add(Long.valueOf(element));
             }
-            userProfile.setFriends(ids);
+            this.friends = ids;
         }
     }
 

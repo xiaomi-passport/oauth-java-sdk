@@ -3,25 +3,15 @@ package com.xiaomi.passport.api;
 import com.xiaomi.passport.common.OAuthHttpClient;
 import com.xiaomi.passport.common.ResponseType;
 import com.xiaomi.passport.constant.GlobalConstants;
-import com.xiaomi.passport.exception.OAuthSdkException;
 import com.xiaomi.passport.pojo.AccessToken;
 import com.xiaomi.passport.pojo.Client;
-import com.xiaomi.passport.util.AuthorizeUrlUtils;
-import com.xiaomi.passport.util.HttpResponseUtils;
-import net.sf.json.JSONObject;
-import net.sf.json.util.JSONUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.validator.routines.UrlValidator;
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,6 +49,9 @@ public class ImplicitGrantHelper implements GlobalConstants {
      */
     @Deprecated
     public AccessToken getImplicitAccessToken(boolean skipConfirm, String state) {
+
+        log.debug("Get implicit access token...");
+
         // prepare params
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair(CLIENT_ID, String.valueOf(client.getId())));
@@ -72,33 +65,15 @@ public class ImplicitGrantHelper implements GlobalConstants {
         }
         params.add(new BasicNameValuePair(SKIP_CONFIRM, String.valueOf(skipConfirm)));
 
-        HttpResponse response;
-        try {
-            response = httpClient.get(AuthorizeUrlUtils.getAuthorizeUrl(), params);
-        } catch (OAuthSdkException e) {
-            log.error("Get authorization code error when execute http request!", e);
-            return null;
-        }
-        if (!HttpResponseUtils.isRedirectStatusLine(response)) {
-            log.error("The http response status[{}] is not expected, expected redirect http status!", response.getStatusLine());
-            return null;
-        }
+        /*
+         * interactive process：
+         *
+         * 1. request https://account.xiaomi.com/oauth2/authorize with params
+         * 2. interact with resource owner and authorize
+         * 3. issued implicit access token as url fragment
+         *
+         */
 
-        Header header = response.getFirstHeader("Location");
-        if (StringUtils.isBlank(header.getValue()) || UrlValidator.getInstance().isValid(header.getValue())) {
-            log.error("Get authorization code error, the code redirect response [{}] is not expected!", header.getValue());
-            return null;
-        }
-
-        try {
-            URIBuilder builder = new URIBuilder(header.getValue());
-            String fragment = builder.getFragment();
-            if (StringUtils.isNotBlank(fragment) && JSONUtils.mayBeJSON(fragment)) {
-                return new AccessToken(JSONObject.fromObject(fragment));
-            }
-        } catch (URISyntaxException e) {
-            // never happen
-        }
         return null;
     }
 }

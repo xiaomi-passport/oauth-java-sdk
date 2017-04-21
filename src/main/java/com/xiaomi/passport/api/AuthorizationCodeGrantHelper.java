@@ -29,16 +29,12 @@ import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.validator.routines.UrlValidator;
-import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,6 +74,8 @@ public class AuthorizationCodeGrantHelper implements GlobalConstants {
     @Deprecated
     public String getAuthorizationCode(boolean skipConfirm, String state) {
 
+        log.debug("Get authorization code...");
+
         // prepare params
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair(CLIENT_ID, String.valueOf(client.getId())));
@@ -91,35 +89,15 @@ public class AuthorizationCodeGrantHelper implements GlobalConstants {
         }
         params.add(new BasicNameValuePair(SKIP_CONFIRM, String.valueOf(skipConfirm)));
 
-        HttpResponse response;
-        try {
-            response = httpClient.get(AuthorizeUrlUtils.getAuthorizeUrl(), params);
-        } catch (OAuthSdkException e) {
-            log.error("Get authorization code error when execute http request!", e);
-            return StringUtils.EMPTY;
-        }
-        if (!HttpResponseUtils.isRedirectStatusLine(response)) {
-            log.error("The http response status[{}] is not expected, expected redirect http status!", response.getStatusLine());
-            return StringUtils.EMPTY;
-        }
+        /*
+         * interactive process：
+         *
+         * 1. request https://account.xiaomi.com/oauth2/authorize with params
+         * 2. interact with resource owner and authorize
+         * 3. issued authorization code as 302 redirect
+         *
+         */
 
-        Header header = response.getFirstHeader("Location");
-        if (StringUtils.isBlank(header.getValue()) || UrlValidator.getInstance().isValid(header.getValue())) {
-            log.error("Get authorization code error, the code redirect response [{}] is not expected!", header.getValue());
-            return StringUtils.EMPTY;
-        }
-
-        try {
-            URIBuilder builder = new URIBuilder(header.getValue());
-            List<NameValuePair> pairs = builder.getQueryParams();
-            for (final NameValuePair pair : pairs) {
-                if ("code".equals(pair.getName())) {
-                    return pair.getValue();
-                }
-            }
-        } catch (URISyntaxException e) {
-            // never happen
-        }
         return StringUtils.EMPTY;
     }
 
@@ -131,6 +109,8 @@ public class AuthorizationCodeGrantHelper implements GlobalConstants {
      * @throws OAuthSdkException when encounter error response
      */
     public AccessToken getAccessTokenByCode(String code) throws OAuthSdkException {
+
+        log.debug("Get access token by code...");
 
         // prepare params
         List<NameValuePair> params = new ArrayList<NameValuePair>();
@@ -157,7 +137,7 @@ public class AuthorizationCodeGrantHelper implements GlobalConstants {
         }
 
         // error response
-        int errorCode = json.optInt("error_code", -1);
+        int errorCode = json.optInt("error", -1);
         String errorDesc = json.optString("error_description", StringUtils.EMPTY);
         log.error("Get authorization code access token error, error info [code={}, desc={}]!", errorCode, errorDesc);
         throw new OAuthSdkException("Get authorization code access token error!", errorCode, errorDesc);

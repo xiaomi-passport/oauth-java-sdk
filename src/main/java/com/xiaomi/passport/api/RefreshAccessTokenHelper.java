@@ -52,6 +52,7 @@ public class RefreshAccessTokenHelper implements GlobalConstants {
 
     public RefreshAccessTokenHelper(Client client) {
         this.client = client;
+        this.httpClient = new OAuthHttpClient();
     }
 
     public RefreshAccessTokenHelper(Client client, OAuthHttpClient httpClient) {
@@ -93,7 +94,7 @@ public class RefreshAccessTokenHelper implements GlobalConstants {
         }
 
         // error response
-        int errorCode = json.optInt("error_code", -1);
+        int errorCode = json.optInt("error", -1);
         String errorDesc = json.optString("error_description", StringUtils.EMPTY);
         log.error("Refresh access token error, error info [code={}, desc={}]!", errorCode, errorDesc);
         throw new OAuthSdkException("Refresh access token error!", errorCode, errorDesc);

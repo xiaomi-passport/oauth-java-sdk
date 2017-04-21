@@ -90,7 +90,12 @@ public class OpenApiHelper implements GlobalConstants {
             log.error("Get user profile error, error info[code={}, desc={}]", errorCode, errorDesc);
             throw new OAuthSdkException("get user profile error", errorCode, errorDesc);
         }
-        return new UserProfile(json.optJSONObject("data"));
+        String data = json.optString("data", StringUtils.EMPTY);
+        if (StringUtils.isBlank(data) || !JSONUtils.mayBeJSON(data)) {
+            log.error("Response json missing 'data' element or not json format, data[{}]", data);
+        }
+        log.debug("Get user profile json response [{}]", data);
+        return new UserProfile(JSONObject.fromObject(data));
     }
 
     /**
@@ -111,7 +116,12 @@ public class OpenApiHelper implements GlobalConstants {
             log.error("Get user open id error, error info[code={}, desc={}]", errorCode, errorDesc);
             throw new OAuthSdkException("get user open id error", errorCode, errorDesc);
         }
-        return json.optJSONObject("data").optString("openid", StringUtils.EMPTY);
+        String data = json.optString("data", StringUtils.EMPTY);
+        if (StringUtils.isBlank(data) || !JSONUtils.mayBeJSON(data)) {
+            log.error("Response json missing 'data' element or not json format, data[{}]", data);
+        }
+        log.debug("Get open id json response [{}]", data);
+        return JSONObject.fromObject(data).optString(OPEN_ID, StringUtils.EMPTY);
     }
 
     /**
@@ -133,6 +143,7 @@ public class OpenApiHelper implements GlobalConstants {
             throw new OAuthSdkException("get user phone and email error", errorCode, errorDesc);
         }
         JSONObject data = json.optJSONObject("data");
+        log.debug("Get user phone and email json response [{}]", data);
         return Pair.of(data.optString("phone", StringUtils.EMPTY), data.optString("email", StringUtils.EMPTY));
     }
 
@@ -156,6 +167,7 @@ public class OpenApiHelper implements GlobalConstants {
         }
         List<Long> ids = new ArrayList<Long>();
         String friends = json.optJSONObject("data").optString("friends", StringUtils.EMPTY);
+        log.debug("Get user miliao friends result [{}]", friends);
         if (StringUtils.isBlank(friends)) {
             return ids;
         }

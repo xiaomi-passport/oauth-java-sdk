@@ -18,6 +18,7 @@ package com.xiaomi.passport.pojo;
 
 import com.xiaomi.passport.constant.GlobalConstants;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -71,6 +72,8 @@ public class AccessToken {
 
     private String macAlgorithm;
 
+    private String openId;
+
     public AccessToken(JSONObject json) {
         this.tokenType = json.getString(GlobalConstants.TOKEN_TYPE);
         this.scope = json.getString(GlobalConstants.SCOPE);
@@ -81,6 +84,7 @@ public class AccessToken {
         }
         this.expiresIn = json.getLong(GlobalConstants.EXPIRES_IN);
         this.refreshToken = json.getString(GlobalConstants.REFRESH_TOKEN);
+        this.openId = json.optString(GlobalConstants.OPEN_ID, StringUtils.EMPTY);
     }
 
     @Override
@@ -148,6 +152,15 @@ public class AccessToken {
 
     public AccessToken setMacAlgorithm(String macAlgorithm) {
         this.macAlgorithm = macAlgorithm;
+        return this;
+    }
+
+    public String getOpenId() {
+        return openId;
+    }
+
+    public AccessToken setOpenId(String openId) {
+        this.openId = openId;
         return this;
     }
 }

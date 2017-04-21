@@ -15,7 +15,7 @@
     </appender>
 
     <root>
-        <priority value="DEBUG"/>
+        <priority value="INFO"/>
         <appender-ref ref="stdout"/>
         <appender-ref ref="file"/>
     </root>

@@ -78,6 +78,8 @@ public interface GlobalConstants {
 
     String SKIP_CONFIRM = "skip_confirm";
 
+    String OPEN_ID = "openId";
+
     /** others */
 
     String HMAC_SHA1 = "HmacSHA1";

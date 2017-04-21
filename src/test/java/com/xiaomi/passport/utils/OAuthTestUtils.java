@@ -13,8 +13,7 @@ public class OAuthTestUtils {
 
     public static Client getTestClient() {
         Client client = new Client();
-        client.setId(2882303761517569294L).setName("小米测试").setKey("5601756982294").setSecret("264cCbeCLgT6wy5NigUk0w==")
-                .setScopes(new Integer[] {1, 3}).setRedirectUri("https://account.xiaomi.com").setPackageName("com.xiaomi.passport.test");
+        // initialize your app info
         return client;
     }
 
