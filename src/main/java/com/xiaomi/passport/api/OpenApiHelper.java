@@ -52,13 +52,13 @@ public class OpenApiHelper implements GlobalConstants {
 
     protected static final String ACCESS_TOKEN = "token";
 
-    protected String accessToken;
-
     protected long clientId;
+
+    protected String accessToken;
 
     protected OAuthHttpClient httpClient;
 
-    public OpenApiHelper(String accessToken, long clientId) {
+    public OpenApiHelper(long clientId, String accessToken) {
         super();
         this.accessToken = accessToken;
         this.clientId = clientId;
@@ -164,10 +164,6 @@ public class OpenApiHelper implements GlobalConstants {
             ids.add(Long.valueOf(element));
         }
         return ids;
-    }
-
-    public void checkPassword() throws OAuthSdkException {
-        // TODO 2017-04-20 20:36:02
     }
 
     /**
