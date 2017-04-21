@@ -1,103 +1,103 @@
-# 小米帐号开放平台OAuth JAVA SDK使用说明
+## 小米帐号开放平台OAuth JAVA SDK使用说明
 
-------
+说明：本文档适用于 1.0 以上 sdk 版本，历史版本可以 [点此查看](https://github.com/xiaomi-passport/oauth-java-sdk/wiki/v0.0.1)。
 
-### 小米OAuth简介
-http://dev.xiaomi.com/docs/passport/oauth2/
+> - jdk version : 1.6+
+> - maven version : 3.0+
 
-### 小米帐号开放平台文档
-http://dev.xiaomi.com/docs/passport/user-guide/
+### 一. SDK 结构说明
+> - com.xiaomi.passport.api.AuthorizationCodeGrantHelper ： 授权码模式授权类
+> - com.xiaomi.passport.api.ImplicitGrantHelper ： 隐式授权模式授权类
+> - com.xiaomi.passport.api.RefreshAccessTokenHelper ： 刷新访问令牌操作类
+> - com.xiaomi.passport.api.OpenApiHelper : 开放数据接口操作类
 
-### JAVA SDK说明
-> * com.xiaomi.api.httpXMHttpClient -- 基础HTTP请求封装
-> * com.xiaomi.api.XMOAuthHttpClient -- 针对OAuth授权流程相关HTTP请求封装
-> * com.xiaomi.api.httpXMApiHttpClient -- 针对API请求相关HTTP请求封装
+### 二. SDK 使用说明
 
-### DEMO
-#### 1. 获取授权URL DEMO
+#### 2.1 授权接口
 
-```java
-public static void main(String[] args) {
-    long cid = 179887661252608l;
-    String cs = "";
-    String uri = "http://xiaomi.com";
+小米账号开放针对第三方 APP 支持 __授权码模式__ 和 __隐式授权模式__ 两种授权方式，两种模式的区别请参考 ‘[OAuth2.0协议原理与实现：协议原理](http://www.zhenchao.org/2017/03/04/oauth-v2-principle/)’。简而言之，如果您的 APP 具备服务端，那么授权码模式将是您的最佳选择。
 
-    XMHttpClient xmHttpClient = new com.xiaomi.api.http.XMHttpClient();
-    XMOAuthHttpClient hc = new XMOAuthHttpClient(cid, cs, uri, hc);
-    String url = xmoAuthHttpClient.getAuthorizeUrl();
-}
-```
+##### 2.1.1 授权码模式授权
 
-复制授权url到浏览器, 输入用户名密码, 浏览器跳转到`http://xiaomi.com?code=code-type`
-复制code-value作为步骤2的输入。
+授权码模式 SDK 接口位于 com.xiaomi.passport.api.AuthorizationCodeGrantHelper 类中，接口使用说明如下：
 
-#### 2.  获取accessToken DEMO
+- __获取授权码 : getAuthorizationCode__
+
+获取授权码授权码模式两步流程的第一步，因为该过程需要与用户交互（即询问用户是否确认授权），所以整个过程无法仅仅通过程序完成。我们在方法中仅仅描述了获取授权码的概要流程，并推荐您参考 ‘[小米账号开放平台接入指南 : 授权码授权](https://dev.mi.com/docs/passport/authorization-code/)’ 接口 1 中说明构建请求地址，请求过程中需要用户确认授权，我们最终会以参数的形式将授权码追加到回调地址后面，并以 302 回调形式下发。
+
+- __获取访问令牌 : getAccessTokenByCode__
+
+在您通过上一步拿到授权之后，接下去可以通过授权码请求小米授权服务器下发访问令牌，SDK 使用示例：
 
 ```java
-public static void main(String[] args) throws XMException, URISyntaxException {
-    long cid = 179887661252608l;
-    String cs = "xxxxx";
-    String uri = "http://xiaomi.com";
-    String codeValue = "code-type";
-
-    XMHttpClient hc = new com.xiaomi.api.http.XMHttpClient();
-    XMOAuthHttpClient xmoAuthHttpClient = new XMOAuthHttpClient(cid, cs, uri, hc);
-    AccessToken token = xmoAuthHttpClient.getAccessTokenByAuthorizationCode(codeValue);
-}
+// 构建您的 APP 信息
+Client client = new Client();
+// 构建授权请求实例
+AuthorizationCodeGrantHelper helper = new AuthorizationCodeGrantHelper(client);
+// 利用授权码请求下发访问令牌
+AccessToken accessToken = helper.getAccessTokenByCode(code);
 ```
 
-AccessToken包括如下信息:
+如果请求成功，则会返回 `AccessToken` 对象，对象属性含义可以参考 ‘[小米账号开放平台接入指南 : 授权码授权](https://dev.mi.com/docs/passport/authorization-code/)’ 接口 2 中的释义。
+
+如果请求失败，则会抛出 `OAuthSdkException`，异常中包含响应的错误码和描述信息。
+
+注意事项：
+
+1. 授权码生命周期为 10 分钟，且只能被使用一次
+2. 访问令牌和刷新令牌最终都应该由服务端持有
+2. 授权过程中需要传递的 `client_secret` 只能由服务端持有，因为使用不当造成的用户数据泄露由第三方企业负责
+
+##### 2.1.2 隐式授权模式授权
+
+隐式授权模式 SDK 接口位于 com.xiaomi.passport.api.ImplicitGrantHelper 类中。隐式授权模式针对没有服务端的 APP 做了优化和妥协，可以一步拿到访问令牌，但是考虑到安全问题，不会下发刷新令牌。同样，因为该过程需要与用户交互（即询问用户是否确认授权），所以整个过程无法仅仅通过程序完成。我们在方法中仅仅描述了获取隐式访问令牌的概要流程，并推荐您参考 ‘[小米账号开放平台接入指南 : 隐式授权](https://dev.mi.com/docs/passport/implicit/)’ 接口 1 中说明构建请求地址，请求过程中需要用户确认授权，访问令牌最终会以 fragment 形式追加到回调地址后面，并以 302 形式回调下发。
+
+##### 2.1.3 刷新访问令牌
+
+授权码模式下发令牌时，默认会同时下发访问令牌和刷新令牌，刷新令牌相对于访问令牌具备较长的生命周期，可以在访问令牌过期时更新访问令牌。
+
+SDK 使用说明：
 
 ```java
-protected String token;
-protected String refreshToken;
-protected String scope;
-protected long expiresIn;
-protected String tokenType;
-protected String macKey;
-protected String macAlgorithm;
+// 构建您的 APP 信息
+Client client = new Client();
+// 构建刷新访问令牌请求实例
+RefreshAccessTokenHelper helper = new RefreshAccessTokenHelper(client);
+// 利用刷新令牌更新访问令牌
+AccessToken accessToken = helper.refreshAccessToken(refreshToken);
 ```
 
-#### 3. 通过refreshToken换取accessToken
+如果请求成功，则会返回 `AccessToken` 对象，对象属性含义可以参考 ‘[小米账号开放平台接入指南 : 刷新访问令牌](https://dev.mi.com/docs/passport/refresh-token/)’ 接口 1 中的释义。
+
+如果请求失败，则会抛出 `OAuthSdkException`，异常中包含响应的错误码和描述信息。
+
+#### 2.2 开放数据接口
+
+授权完成之后，您可以通过手上持有的访问令牌请求权限范围内的小米开放数据和服务，账号这边开放了用户资料，包括用户的基本资料、手机号、邮箱等信息。
+
+SDK 使用说明：
 
 ```java
-public static void main(String[] args) throws XMException, URISyntaxException {
-    long cId = 179887661252608l;
-    String cs = "xxxxx";
-    String uri = "http://xiaomi.com";
-    String refreshToken = "code-type";
+// 构建您的 APP 信息
+Client client = new Client();
+// 准备访问令牌
+String accessToken = "your access token here";
+// 构建开放数据请求实例
+OpenApiHelper helper = new OpenApiHelper(client.getId(), accessToken);
 
-    XMHttpClient hc = new com.xiaomi.api.http.XMHttpClient();
-    XMOAuthHttpClient xmoAuthHttpClient = new XMOAuthHttpClient(cId, cs, uri, hc);
-    AccessToken token = xmoAuthHttpClient.getAccessTokenByRefreshToken(refreshToken);
-}
+// 1. 获取用户名片
+UserProfile profile = helper.getUserProfile();
+
+// 2. 获取用户OpenID
+String openId = helper.getOpenId()
+
+// 3. 获取用户手机号（左）和邮箱（右）
+Pair<String, String> pair = helper.getPhoneAndEmail();
+
+// 4. 获取用户米聊好友关系
+List<Long> friends = helper.getFriendIdList();
 ```
 
-#### 3. 访问OPEN API DEMO (以获取用户名片为例)
-```java
-public static void main(String[] args) throws Exception {
-    long cId = 179887661252608l;
-    String tokenId = "accessToken.token";
-    List<Header> headers = new ArrayList<Header>();
-
-    List<NameValuePair> params = new ArrayList<NameValuePair>();
-    params.add(new BasicNameValuePair("clientId", String.valueOf(cId)));
-    params.add(new BasicNameValuePair("token", tokenId));
-
-    String macKey = "accessToken.macKey";
-
-    String nonce = XMUtil.generateNonce();
-    String qs = URLEncodedUtils.format(params, "UTF-8");
-    String apiHost  "open.account.xiaomi.com";
-    String apiPath = "/user/profile";
-    String mac = XMUtil.getMacAccessTokenSignatureString(nonce, "GET", apiHost,apiPath, 
-                                                          qs,macKey, "HmacSHA1");
-    Header macHeader = XMUtil.buildMacRequestHead(tokenId, nonce, mac);
-
-    headers.add(macHeader);
-
-    XMApiHttpClient client = new XMApiHttpClient(cId, tokenId, new XMHttpClient());
-    JSONObject json = client.apiCall("/user/profile", params, headers, "GET");
-    System.out.println(json.toString());
-}
-```
+### 相关文档
+1. [小米账号开放平台接入指南](http://dev.xiaomi.com/docs/passport/user-guide/)
+2. [OAuth 2.0 协议原理与实现](http://www.zhenchao.org/2017/03/04/oauth-v2-principle/)
