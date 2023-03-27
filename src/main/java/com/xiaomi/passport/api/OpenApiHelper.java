@@ -130,6 +130,7 @@ public class OpenApiHelper implements GlobalConstants {
      * @return
      * @throws OAuthSdkException
      */
+    @Deprecated
     public Pair<String, String> getPhoneAndEmail() throws OAuthSdkException {
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair(OPEN_CLIENT_ID, String.valueOf(clientId)));
@@ -153,6 +154,7 @@ public class OpenApiHelper implements GlobalConstants {
      * @return
      * @throws OAuthSdkException
      */
+    @Deprecated
     public List<Long> getFriendIdList() throws OAuthSdkException {
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair(OPEN_CLIENT_ID, String.valueOf(clientId)));

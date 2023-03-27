@@ -17,10 +17,12 @@ import java.util.List;
 
 /**
  * implicit grant type
+ * deprecated in 2023-3-27
  *
  * @author zhenchao.wang 2017-04-20 18:14
  * @version 1.0.0
  */
+@Deprecated
 public class ImplicitGrantHelper implements GlobalConstants {
 
     private static final Logger log = LoggerFactory.getLogger(RefreshAccessTokenHelper.class);

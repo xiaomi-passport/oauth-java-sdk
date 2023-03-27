@@ -45,6 +45,7 @@ public class OpenApiHelperTest {
     }
 
     @Test
+    @Deprecated
     public void getPhoneAndEmail() throws Exception {
         Pair<String, String> pair = helper.getPhoneAndEmail();
         Assert.assertNotNull(pair);
@@ -53,6 +54,7 @@ public class OpenApiHelperTest {
     }
 
     @Test
+    @Deprecated
     public void getFriendIdList() throws Exception {
         List<Long> friends = helper.getFriendIdList();
         Assert.assertTrue(CollectionUtils.isNotEmpty(friends));
