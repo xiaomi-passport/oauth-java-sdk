@@ -44,4 +44,18 @@ public class OpenApiHelperTest {
         Assert.assertTrue(StringUtils.isNotBlank(helper.getOpenId()));
     }
 
+    @Test
+    public void getPhoneAndEmail() throws Exception {
+        Pair<String, String> pair = helper.getPhoneAndEmail();
+        Assert.assertNotNull(pair);
+        Assert.assertTrue(StringUtils.isNotBlank(pair.getLeft()));
+        Assert.assertTrue(StringUtils.isNotBlank(pair.getRight()));
+    }
+
+    @Test
+    public void getFriendIdList() throws Exception {
+        List<Long> friends = helper.getFriendIdList();
+        Assert.assertTrue(CollectionUtils.isNotEmpty(friends));
+    }
+
 }

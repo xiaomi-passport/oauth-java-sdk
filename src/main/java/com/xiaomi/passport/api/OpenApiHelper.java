@@ -123,6 +123,61 @@ public class OpenApiHelper implements GlobalConstants {
         log.debug("Get open id json response [{}]", data);
         return JSONObject.fromObject(data).optString(OPEN_ID, StringUtils.EMPTY);
     }
+
+    /**
+     * get phone number and email address by access token and client id
+     *
+     * @return
+     * @throws OAuthSdkException
+     */
+    public Pair<String, String> getPhoneAndEmail() throws OAuthSdkException {
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair(OPEN_CLIENT_ID, String.valueOf(clientId)));
+        params.add(new BasicNameValuePair(ACCESS_TOKEN, accessToken));
+        JSONObject json = this.request(HttpMethod.GET, PHONE_AND_EMAIL_PATH, params);
+        if (!this.isSuccessResult(json)) {
+            // error response
+            int errorCode = json.optInt("code", -1);
+            String errorDesc = json.optString("description", StringUtils.EMPTY);
+            log.error("Get user phone number and email address error, error info[code={}, desc={}]", errorCode, errorDesc);
+            throw new OAuthSdkException("get user phone and email error", errorCode, errorDesc);
+        }
+        JSONObject data = json.optJSONObject("data");
+        log.debug("Get user phone and email json response [{}]", data);
+        return Pair.of(data.optString("phone", StringUtils.EMPTY), data.optString("email", StringUtils.EMPTY));
+    }
+
+    /**
+     * get user miliao friend id list by access token and client id
+     *
+     * @return
+     * @throws OAuthSdkException
+     */
+    public List<Long> getFriendIdList() throws OAuthSdkException {
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair(OPEN_CLIENT_ID, String.valueOf(clientId)));
+        params.add(new BasicNameValuePair(ACCESS_TOKEN, accessToken));
+        JSONObject json = this.request(HttpMethod.GET, USER_REALTION_PATH, params);
+        if (!this.isSuccessResult(json)) {
+            // error response
+            int errorCode = json.optInt("code", -1);
+            String errorDesc = json.optString("description", StringUtils.EMPTY);
+            log.error("Get user miliao friend list error, error info[code={}, desc={}]", errorCode, errorDesc);
+            throw new OAuthSdkException("get user miliao friend list error", errorCode, errorDesc);
+        }
+        List<Long> ids = new ArrayList<Long>();
+        String friends = json.optJSONObject("data").optString("friends", StringUtils.EMPTY);
+        log.debug("Get user miliao friends result [{}]", friends);
+        if (StringUtils.isBlank(friends)) {
+            return ids;
+        }
+        String[] elements = friends.split(",");
+        for (final String element : elements) {
+            ids.add(Long.valueOf(element));
+        }
+        return ids;
+    }
+
     /**
      * send request to specify url with params and expected json response
      *
